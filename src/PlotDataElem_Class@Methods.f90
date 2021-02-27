@@ -94,6 +94,8 @@ MODULE PROCEDURE init_plotDataElem
     Obj % varName( i ) = varName( i )
   END DO
 
+  ALLOCATE( varValue( n ) )
+  varValue = 0.0_DFP
 
   CALL Display("Setting dimension of grid")
   Obj % dim = dim
@@ -192,23 +194,23 @@ MODULE PROCEDURE init_plotDataElem
     END IF
   END DO
 
-  IF( dim .EQ. 1 ) THEN
-    DO i = 1, tZone
-      Obj % zone( i ) % tPoints = Obj % zone( i ) % tPoints * 2
-      tempMat = Obj % zone( i ) % varValue
-      DEALLOCATE( Obj % zone( i ) % varValue )
-      ALLOCATE( Obj % zone( i ) % varValue( n, 2 * tPoints ) )
-      Obj % zone( i ) % varValue( 1 : n, 1 : tPoints ) = tempMat
-      Obj % zone( i ) % varValue( 1 : n, tPoints + 1 : 2 * tPoints ) = tempMat
-      tempMat = Obj % zone( i ) % xyz
-      DEALLOCATE( Obj % zone( i ) % xyz )
-      ALLOCATE( Obj % zone( i ) % xyz( 3, 2 * tPoints ) )
-      Obj % zone( i ) % xyz( 1 : 3, 1 : tPoints ) = tempMat
-      Obj % zone( i ) % xyz( 1 : 3, tPoints + 1 : 2 * tPoints ) = tempMat
-      Obj % zone( i ) % xyz( 2, tPoints + 1 : 2 * tPoints ) = &
-        & Obj % zone( i ) % xyz( 2, tPoints + 1 : 2 * tPoints ) + 1.0
-    END DO
-  END IF
+  ! IF( dim .EQ. 1 ) THEN
+  !   DO i = 1, tZone
+  !     Obj % zone( i ) % tPoints = Obj % zone( i ) % tPoints * 2
+  !     tempMat = Obj % zone( i ) % varValue
+  !     DEALLOCATE( Obj % zone( i ) % varValue )
+  !     ALLOCATE( Obj % zone( i ) % varValue( n, 2 * tPoints ) )
+  !     Obj % zone( i ) % varValue( 1 : n, 1 : tPoints ) = tempMat
+  !     Obj % zone( i ) % varValue( 1 : n, tPoints + 1 : 2 * tPoints ) = tempMat
+  !     tempMat = Obj % zone( i ) % xyz
+  !     DEALLOCATE( Obj % zone( i ) % xyz )
+  !     ALLOCATE( Obj % zone( i ) % xyz( 3, 2 * tPoints ) )
+  !     Obj % zone( i ) % xyz( 1 : 3, 1 : tPoints ) = tempMat
+  !     Obj % zone( i ) % xyz( 1 : 3, tPoints + 1 : 2 * tPoints ) = tempMat
+  !     Obj % zone( i ) % xyz( 2, tPoints + 1 : 2 * tPoints ) = &
+  !       & Obj % zone( i ) % xyz( 2, tPoints + 1 : 2 * tPoints ) + 1.0
+  !   END DO
+  ! END IF
 END PROCEDURE init_plotDataElem
 
 !----------------------------------------------------------------------------

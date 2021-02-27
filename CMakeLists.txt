@@ -36,13 +36,6 @@ cmake_print_variables(CMAKE_SYSTEM_VERSION)
 cmake_print_variables(CMAKE_SYSTEM_PROCESSOR)
 cmake_print_variables(CMAKE_HOST_SYSTEM_NAME)
 
-option(BUILD_SHARED_LIBS "Build shared library" ON)
-if (BUILD_SHARED_LIBS)
-  message(STATUS "${PROJECT_NAME} will be built as a shared library.")
-else()
-  message(STATUS "${PROJECT_NAME} will be built as a static library.")
-endif()
-
 # COMPILER RELATED OPTIONS
 if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release CACHE STRING "Build type" FORCE)
@@ -97,18 +90,13 @@ foreach(p LIB BIN INCLUDE CMAKE)
 endforeach()
 
 # INSTALLING easifemBase
-if(BUILD_SHARED_LIBS)
-  add_library(${PROJECT_NAME} SHARED "" )
-else()
-  add_library(${PROJECT_NAME} STATIC "")
-endif()
+add_library(${PROJECT_NAME} STATIC "")
 
 target_compile_options(
   ${PROJECT_NAME}
   PRIVATE
   ${FORTRAN_FLAGS}
-  "$<$<CONFIG:Debug>:${FORTRAN_FLAGS_DEBUG}>"
-  "$<$<CONFIG:Release>:${FORTRAN_FLAGS_RELEASE}>"
+  ${FORTRAN_FLAGS_RELEASE}
 )
 
 # target_compile_definitions()
@@ -143,7 +131,6 @@ target_sources(
   src/TableDelaunay.f90
 )
 
-
 add_executable(plotDataElem "")
 target_sources(
   plotDataElem PRIVATE src/post_process.f90)
@@ -153,8 +140,7 @@ target_compile_options(
   plotDataElem
   PRIVATE
   ${FORTRAN_FLAGS}
-  "$<$<CONFIG:Debug>:${FORTRAN_FLAGS_DEBUG}>"
-  "$<$<CONFIG:Release>:${FORTRAN_FLAGS_RELEASE}>"
+  ${FORTRAN_FLAGS_RELEASE}
 )
 target_link_libraries(
   plotDataElem
@@ -162,31 +148,10 @@ target_link_libraries(
   ${PROJECT_NAME}
 )
 
-# Prepare RPATH
-file(RELATIVE_PATH _rel ${CMAKE_INSTALL_PREFIX}/${INSTALL_BINDIR} ${CMAKE_INSTALL_PREFIX})
-if(APPLE)
-  set(_rpath "@loader_path/${_rel}")
-else()
-  set(_rpath "\$ORIGIN/${_rel}")
-endif()
-file(TO_NATIVE_PATH "${_rpath}/${INSTALL_LIBDIR}" message_RPATH)
-
-set_target_properties(
-  plotDataElem
-  PROPERTIES
-    MACOSX_RPATH ON
-    SKIP_BUILD_RPATH OFF
-    BUILD_WITH_INSTALL_RPATH OFF
-    INSTALL_RPATH "${message_RPATH}"
-    INSTALL_RPATH_USE_LINK_PATH ON
-)
-
 install(
   TARGETS
     ${PROJECT_NAME}
     plotDataElem
-  # EXPORT
-    # ${TARGETS_EXPORT_NAME}
   ARCHIVE
     DESTINATION ${INSTALL_LIBDIR}
     COMPONENT lib
