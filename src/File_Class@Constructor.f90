@@ -66,6 +66,7 @@ MODULE PROCEDURE open_file
     IF( Obj % IOSTAT .NE. 0 ) THEN
       Obj % isOpen = .FALSE.
       WRITE( *, "(A)") "FATAL ERROR:: File could not be opened"
+      WRITE( *, * ) "IOSTAT = ", obj%IOSTAT
       WRITE( *, "(A)" ) "PROGRAM STOPPED"
       STOP
     ELSE

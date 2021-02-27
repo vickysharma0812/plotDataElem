@@ -55,12 +55,12 @@ WRITE(*,"(A)") "|  .--.  |   /  ^  \ `---|  |----`  /  ^  \                     
 WRITE(*,"(A)") "|  |  |  |  /  /_\  \    |  |      /  /_\  \                          "
 WRITE(*,"(A)") "|  '--'  | /  _____  \   |  |     /  _____  \                         "
 WRITE(*,"(A)") "|_______/ /__/     \__\  |__|    /__/     \__\                        "
-WRITE(*,"(A)") " _______  __       _______ .___  ___.  _______ .__   __. .___________."
-WRITE(*,"(A)") "|   ____||  |     |   ____||   \/   | |   ____||  \ |  | |           |"
-WRITE(*,"(A)") "|  |__   |  |     |  |__   |  \  /  | |  |__   |   \|  | `---|  |----`"
-WRITE(*,"(A)") "|   __|  |  |     |   __|  |  |\/|  | |   __|  |  . `  |     |  |     "
-WRITE(*,"(A)") "|  |____ |  `----.|  |____ |  |  |  | |  |____ |  |\   |     |  |     "
-WRITE(*,"(A)") "|_______||_______||_______||__|  |__| |_______||__| \__|     |__|     "
+WRITE(*,"(A)") " _______  __       _______ .___  ___.  "
+WRITE(*,"(A)") "|   ____||  |     |   ____||   \/   |  "
+WRITE(*,"(A)") "|  |__   |  |     |  |__   |  \  /  |  "
+WRITE(*,"(A)") "|   __|  |  |     |   __|  |  |\/|  |  "
+WRITE(*,"(A)") "|  |____ |  `----.|  |____ |  |  |  |  "
+WRITE(*,"(A)") "|_______||_______||_______||__|  |__|  "
 WRITE(*,"(A)") "                                                                      "
 WRITE( *, * )
 WRITE( *, * ) "========================================================================"
@@ -165,57 +165,76 @@ PROGRAM MAIN
   integer :: telements
   integer :: dim
   character( len = 120 ) :: prefix
-  character( LEN = 120 ) :: buffer
+  character( LEN = 500 ) :: buffer
+  TYPE( String ) :: tmpstr
+  TYPE( String ), ALLOCATABLE :: tmpstrs(:)
   logical :: isAxiSym
   real( dfp ), allocatable :: xyz( :, : )
 
   CALL WELCOME
 
   ! user input: ask for file path
-  WRITE( *, "(A)" ) "Enter the PATH where Plot_Data_Elem File is located :: "
-  READ( *, * ) buffer
-
+  DO
+    READ( *, "(A)" ) buffer
+    IF( buffer(1:1) .EQ. "!" .OR. LEN_TRIM(buffer) .EQ. 0 ) THEN
+      CYCLE
+    ELSE
+      EXIT
+    END IF
+  END DO
+  tmpstr = String(buffer)
+  CALL tmpstr%split(tokens = tmpstrs, sep='!')
+  buffer = TRIM(tmpstrs(1)%chars())
   fileName(1) = string( trim( buffer ) )
-  fileName(2) = string( "Plot_Data_Elem")
+  fileName(2) = string( "/Plot_Data_Elem")
   fileName(3) = string( "" )
 
-  ! ask for prefix
-  WRITE( *, "(A)" ) "Enter Prefix: (Example: 'test')"
-  READ( *, * ) prefix
+  READ( *, "(A)" ) buffer
+  tmpstr = String(buffer)
+  CALL tmpstr%split(tokens = tmpstrs, sep='!')
+  prefix=TRIM(tmpstrs(1)%chars())
 
   ! ask for the total number of variables
-  WRITE( *, "(A)" ) "Enter total number of variables: (Example: 3)"
-  READ( *, * ) tvar
+  ! WRITE( *, "(A)" ) "Enter total number of variables: (Example: 3)"
+  READ( *, * ) buffer
+  tmpstr = String(buffer)
+  CALL tmpstr%split(tokens = tmpstrs, sep='!')
+  tvar=tmpstrs(1)%to_number(I4B)
 
   ALLOCATE( varName( tvar ) )
 
   IF( tvar .gt. 0 ) THEN
     DO i = 1, tvar
-      WRITE( *, "(A)" ) "VARIABLE( " // trim( str( n = i , no_sign = .true. ) ) // " ): (Example: 'P')"
+
+      ! WRITE( *, "(A)" ) "VARIABLE( " // trim( str( n = i , no_sign = .true. ) ) // " ): (Example: 'P')"
       READ( *, * ) buffer
-      varName( i ) = String( trim( buffer ) )
+      tmpstr = String(buffer)
+      CALL tmpstr%split(tokens = tmpstrs, sep='!')
+      varName( i ) = tmpstrs(1)
     END DO
   END IF
 
   ! ask for the dim of problem
-  WRITE( *, "(A)" ) "Enter dimension: (Example: 1)"
-  READ( *, * ) dim
+  ! WRITE( *, "(A)" ) "Enter dimension: (Example: 1)"
+  READ( *, * ) buffer
+  tmpstr = String(buffer)
+  CALL tmpstr%split(tokens = tmpstrs, sep='!')
+  dim=tmpstrs(1)%to_number(I4B)
 
-  WRITE( *, "(A)" ) "Axisymmetric? (Example: true)"
-  READ( *, * ) isAxiSym
+  ! WRITE( *, "(A)" ) "Axisymmetric? (Example: true)"
+  READ( *, "(A)" ) buffer
+  tmpstr = String(buffer)
+  CALL tmpstr%split(tokens = tmpstrs, sep='!')
+  buffer=TRIM(tmpstrs(1)%chars())
+  SELECT CASE( buffer(1:1) )
+  CASE( 'y', 'Y', 'T', 't' )
+    isAxiSym = .TRUE.
+  CASE DEFAULT
+    isAxiSym = .FALSE.
+  END SELECT
 
-  ! Read the telements
-  ! write( *, "(A)" ) "Enter the number of data to be read in each zone (example: 10)"
-  ! write( *, "(A)" ) "Enter -1 if you want to read all data"
-  ! read( *, * ) telements
-  ! if( telements .lt. 0 ) then
   CALL Initiate( obj = obj, fileName = fileName, varName = varName, &
     & dim = dim, isAxiSym = isAxiSym )
-
-  ! else
-  !   call initiate( obj = obj, fileName = fileName, varName = varName, &
-  !     & dim = dim, isAxiSym =isAxiSym,tElements = telements )
-  ! end if
 
   WRITE( *, "(A)" ) "======================================"
   WRITE( *, "(A)" ) "An Instance of PlotDataElem is CREATED"
